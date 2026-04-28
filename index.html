@@ -332,7 +332,6 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:v
     <button class="tab active" onclick="showTab('hoje')">Hoje</button>
     <button class="tab" onclick="showTab('treino')">Treino</button>
     <button class="tab" onclick="showTab('jardim')">Jardim</button>
-    <button class="tab" onclick="showTab('jogos')">🎮 Jogos</button>
     <button class="tab" onclick="showTab('progresso')">Progresso</button>
     <button class="tab" onclick="showTab('loja')">Loja</button>
   </div>
@@ -352,6 +351,17 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:v
           <div class="char-level" id="charLevel">Nível 1 — Iniciante</div>
           <div class="xp-bar-wrap"><div class="xp-bar" id="xpBar" style="width:0%"></div></div>
           <div class="xp-label" id="xpLabel">0 / 100 XP</div>
+          <!-- streak progress -->
+          <div style="margin-top:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+              <span style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;">Dia de hoje 🔥</span>
+              <span style="font-size:10px;font-weight:800;color:var(--gold);" id="streakPctLabel">0%</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.08);border-radius:6px;height:5px;overflow:hidden;">
+              <div id="streakBar" style="height:100%;width:0%;border-radius:6px;background:linear-gradient(90deg,#f5c842,#ffaa00);transition:width .5s ease;"></div>
+            </div>
+            <div style="font-size:9px;color:var(--text3);margin-top:3px;" id="streakHint">Treino · Água · Hábitos</div>
+          </div>
         </div>
       </div>
 
@@ -519,106 +529,6 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:v
     </div>
 
     <!-- ── TAB: JOGOS ── -->
-    <div id="tab-jogos" class="screen">
-
-      <!-- sub-tabs -->
-      <div style="display:flex;gap:0;margin-bottom:16px;background:var(--card);border-radius:12px;padding:3px;">
-        <button id="jogo-caminhada-btn" onclick="showJogo('caminhada')" style="flex:1;padding:8px;border:none;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;transition:all .2s;font-family:var(--sans);background:var(--accent);color:#fff;">🚶 Caminhada</button>
-        <button id="jogo-runner-btn" onclick="showJogo('runner')" style="flex:1;padding:8px;border:none;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;transition:all .2s;font-family:var(--sans);background:transparent;color:var(--text3);">🏃 Runner</button>
-      </div>
-
-      <!-- ── JOGO: CAMINHADA ── -->
-      <div id="jogo-caminhada">
-        <div id="caminhada-lobby">
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:14px;">
-            <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:6px;">Caminhada Consciente 🌿</div>
-            <div style="font-size:11px;color:var(--text3);line-height:1.7;margin-bottom:16px;">Coloque o celular na mão e caminhe. A Ayelen anda com você pelo jardim em tempo real usando o acelerômetro.</div>
-            <div class="section-title" style="text-align:left;">Meta de duração</div>
-            <div style="display:flex;gap:6px;margin-bottom:16px;" id="caminhadaDurBtns">
-              <button class="dur-btn" onclick="selectCaminhadaDur(this,10)">10 min</button>
-              <button class="dur-btn" onclick="selectCaminhadaDur(this,20)">20 min</button>
-              <button class="dur-btn" onclick="selectCaminhadaDur(this,30)">30 min</button>
-              <button class="dur-btn" onclick="selectCaminhadaDur(this,45)">45 min</button>
-            </div>
-            <div style="font-size:11px;color:var(--text3);margin-bottom:12px;" id="caminhadaReward">Selecione a duração para ver a recompensa</div>
-            <button class="save-btn" onclick="startCaminhada()" id="startCaminhadaBtn" style="opacity:.5;">▶ Começar caminhada</button>
-          </div>
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;">
-            <div class="section-title">Histórico</div>
-            <div id="caminhadaHistory" style="display:flex;flex-direction:column;gap:6px;"></div>
-          </div>
-        </div>
-
-        <!-- active walk screen -->
-        <div id="caminhada-active" style="display:none;">
-          <canvas id="caminhadaCanvas" style="width:100%;border-radius:var(--radius);display:block;margin-bottom:12px;"></canvas>
-          <div style="display:flex;gap:8px;margin-bottom:12px;">
-            <div class="stat-card"><div class="stat-val" id="caminhadaTimer">00:00</div><div class="stat-label">Tempo</div></div>
-            <div class="stat-card"><div class="stat-val" id="caminhadaPassos">0</div><div class="stat-label">Passos</div></div>
-            <div class="stat-card"><div class="stat-val" id="caminhadaPct">0%</div><div class="stat-label">Meta</div></div>
-          </div>
-          <button onclick="stopCaminhada()" style="width:100%;padding:14px;background:rgba(240,112,112,0.2);border:1px solid rgba(240,112,112,0.4);border-radius:12px;font-size:13px;font-weight:800;color:#f07070;cursor:pointer;font-family:var(--sans);">⏹ Encerrar caminhada</button>
-        </div>
-
-        <!-- victory screen -->
-        <div id="caminhada-victory" style="display:none;text-align:center;padding:20px 0;">
-          <canvas id="caminhadaVictoryCanvas" width="300" height="200" style="width:100%;border-radius:var(--radius);margin-bottom:16px;"></canvas>
-          <div style="font-size:22px;font-weight:900;color:var(--accent2);margin-bottom:6px;" id="victoryTitle">Incrível! 🎉</div>
-          <div style="font-size:13px;color:var(--text3);margin-bottom:16px;" id="victoryMsg"></div>
-          <div style="display:flex;gap:8px;justify-content:center;margin-bottom:20px;">
-            <div style="background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.3);border-radius:12px;padding:10px 18px;font-size:14px;font-weight:900;color:var(--gold);" id="victoryXP">+0 XP</div>
-            <div style="background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.3);border-radius:12px;padding:10px 18px;font-size:14px;font-weight:900;color:var(--gold);" id="victoryCoins">+0 ⭐</div>
-          </div>
-          <button onclick="resetCaminhada()" class="save-btn">↩ Voltar</button>
-        </div>
-      </div>
-
-      <!-- ── JOGO: RUNNER ── -->
-      <div id="jogo-runner" style="display:none;">
-        <div id="runner-lobby">
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:14px;">
-            <div style="font-size:32px;margin-bottom:8px;">🏃</div>
-            <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:6px;">Runner Semanal</div>
-            <div style="font-size:11px;color:var(--text3);line-height:1.7;margin-bottom:10px;">O jogo abre em tela cheia horizontal. Incline o celular para a direita → personagem vai à direita. Desvie dos obstáculos e colete itens!</div>
-            <div id="runnerBonus" style="background:rgba(201,111,168,0.1);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:16px;font-size:12px;font-weight:700;color:var(--accent2);"></div>
-            <button class="save-btn" onclick="startRunner()">▶ Jogar agora</button>
-          </div>
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;">
-            <div class="section-title">Recordes</div>
-            <div id="runnerHistory" style="display:flex;flex-direction:column;gap:6px;"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- RUNNER FULLSCREEN OVERLAY -->
-      <div id="runner-fullscreen" style="display:none;position:fixed;inset:0;background:#0e0820;z-index:500;overflow:hidden;">
-        <canvas id="runnerCanvas" style="position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;"></canvas>
-        <!-- HUD -->
-        <div style="position:absolute;top:0;left:0;right:0;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(rgba(0,0,0,0.5),transparent);pointer-events:none;">
-          <div style="display:flex;gap:8px;">
-            <div style="background:rgba(0,0,0,0.6);border-radius:10px;padding:5px 12px;font-size:13px;font-weight:900;color:#fff;"><span style="font-size:9px;opacity:.6;">DIST </span><span id="runnerDist">0m</span></div>
-            <div style="background:rgba(0,0,0,0.6);border-radius:10px;padding:5px 12px;font-size:13px;font-weight:900;color:var(--gold);"><span style="font-size:9px;opacity:.6;">PTS </span><span id="runnerScore">0</span></div>
-          </div>
-          <div id="runnerLivesHUD" style="font-size:20px;letter-spacing:2px;">❤️❤️❤️</div>
-          <button onclick="endRunner();resetRunner();" style="background:rgba(240,112,112,0.25);border:1px solid rgba(240,112,112,0.4);border-radius:10px;padding:5px 12px;font-size:11px;font-weight:800;color:#f07070;cursor:pointer;font-family:var(--sans);pointer-events:all;">⏹</button>
-        </div>
-        <!-- gameover -->
-        <div id="runner-gameover" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.88);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px;">
-          <div style="font-size:52px;margin-bottom:10px;">💜</div>
-          <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:6px;" id="gameoverTitle">Fim!</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:20px;" id="gameoverMsg"></div>
-          <div style="display:flex;gap:10px;justify-content:center;margin-bottom:24px;">
-            <div style="background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.3);border-radius:12px;padding:10px 20px;font-size:15px;font-weight:900;color:var(--gold);" id="gameoverXP">+0 XP</div>
-            <div style="background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.3);border-radius:12px;padding:10px 20px;font-size:15px;font-weight:900;color:var(--gold);" id="gameoverCoins">+0 ⭐</div>
-          </div>
-          <div style="display:flex;gap:10px;">
-            <button onclick="resetRunner()" style="padding:14px 24px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:12px;font-size:13px;font-weight:800;color:#fff;cursor:pointer;font-family:var(--sans);">↩ Sair</button>
-            <button onclick="startRunner()" style="padding:14px 24px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:12px;font-size:13px;font-weight:900;color:#fff;cursor:pointer;font-family:var(--sans);">↺ De novo!</button>
-          </div>
-        </div>
-      </div>
-
-    </div>
 
     <!-- ── TAB: LOJA ── -->
     <div id="tab-loja" class="screen">
@@ -885,11 +795,79 @@ function updateTodayXP() {
   const h = state.habits[TODAY] || {};
   let tx = 0;
   getHabits().forEach(hc=>{ if(h[hc.id]) tx += hc.xp; });
-  if(state.water[TODAY]) tx += 15;
+  const waterPct = (state.water[TODAY]||0) / getWaterMeta();
+  if(waterPct >= 1) tx += 15;
   document.getElementById('todayXpVal').textContent = tx;
+  updateStreakProgress();
 }
 
-// ── WATER META ──
+// ── STREAK PROGRESS BAR ──
+function updateStreakProgress() {
+  const done = state.habits[TODAY] || {};
+  const allHabits = getHabits();
+  const habitsDone = allHabits.filter(h=>done[h.id]).length;
+  const habitsPct = allHabits.length > 0 ? habitsDone/allHabits.length : 0;
+  const waterPct = (state.water[TODAY]||0) / getWaterMeta();
+  const trainedToday = (state.workouts||[]).some(w=>w.date===TODAY);
+
+  // each of the 3 pillars worth 33.3%
+  const pillar1 = trainedToday ? 1 : 0;
+  const pillar2 = Math.min(1, waterPct);
+  const pillar3 = Math.min(1, habitsPct);
+  const total = Math.round((pillar1 + pillar2 + pillar3) / 3 * 100);
+
+  const bar = document.getElementById('streakBar');
+  const label = document.getElementById('streakPctLabel');
+  const hint = document.getElementById('streakHint');
+  if(!bar) return;
+
+  bar.style.width = total + '%';
+  label.textContent = total + '%';
+
+  // color changes with progress
+  if(total >= 100) {
+    bar.style.background = 'linear-gradient(90deg,#6dcc7a,#4aaa58)';
+    label.style.color = 'var(--green)';
+    hint.textContent = '✅ Dia completo! Streak garantido!';
+    hint.style.color = 'var(--green)';
+  } else if(total >= 66) {
+    bar.style.background = 'linear-gradient(90deg,#f5c842,#ffaa00)';
+    label.style.color = 'var(--gold)';
+    const missing = [];
+    if(!trainedToday) missing.push('treino');
+    if(waterPct < 0.6) missing.push('água');
+    if(habitsPct < 0.5) missing.push('hábitos');
+    hint.textContent = `Falta: ${missing.join(' · ')}`;
+    hint.style.color = 'var(--text3)';
+  } else {
+    bar.style.background = 'linear-gradient(90deg,#c96fa8,#e891c8)';
+    label.style.color = 'var(--accent2)';
+    // show what's done
+    const done2 = [];
+    if(trainedToday) done2.push('treino ✓');
+    if(waterPct >= 0.6) done2.push('água ✓');
+    if(habitsPct >= 0.5) done2.push('hábitos ✓');
+    hint.textContent = done2.length ? done2.join(' · ') : 'Treino · Água · Hábitos';
+    hint.style.color = 'var(--text3)';
+  }
+}
+
+// ── STREAK / DAY COMPLETE ──
+// Dia completo = 2 de 3 pilares: treino, água 60%+, hábitos 50%+
+function checkDayComplete() {
+  const done = state.habits[TODAY] || {};
+  const allHabits = getHabits();
+  const habitsDone = allHabits.filter(h=>done[h.id]).length;
+  const habitsPct = allHabits.length > 0 ? habitsDone/allHabits.length : 0;
+  const waterPct = (state.water[TODAY]||0) / getWaterMeta();
+  const trainedToday = (state.workouts||[]).some(w=>w.date===TODAY);
+
+  let score = 0;
+  if(trainedToday) score++;
+  if(waterPct >= 0.6) score++;
+  if(habitsPct >= 0.5) score++;
+  return score >= 2;
+}
 function getWaterMeta() { return state.waterMeta || 8; }
 
 function editWaterMeta() {
@@ -944,7 +922,7 @@ function toggleCup(i, meta) {
     checkFlower();
   }
   save(state);
-  buildWater(); updateTodayXP(); buildDateStrip();
+  buildWater(); updateTodayXP(); buildDateStrip(); updateStreakProgress();
 }
 
 // ── HABITS (with custom) ──
@@ -1002,14 +980,20 @@ function toggleHabit(h, el) {
 }
 
 // ── STREAK / DAY COMPLETE ──
-// Um dia é completo quando: treino registrado OU 3+ hábitos + água 60%+
+// Dia completo = 2 de 3 pilares: treino, água 60%+, hábitos 50%+
 function checkDayComplete() {
   const done = state.habits[TODAY] || {};
-  const habitsDone = getHabits().filter(h=>done[h.id]).length;
+  const allHabits = getHabits();
+  const habitsDone = allHabits.filter(h=>done[h.id]).length;
+  const habitsPct = allHabits.length > 0 ? habitsDone/allHabits.length : 0;
   const waterPct = (state.water[TODAY]||0) / getWaterMeta();
-  const trainedToday = state.workouts.some(w=>w.date===TODAY);
-  return (trainedToday && habitsDone >= 2 && waterPct >= 0.5) ||
-         (habitsDone >= Math.ceil(getHabits().length * 0.6) && waterPct >= 0.6);
+  const trainedToday = (state.workouts||[]).some(w=>w.date===TODAY);
+
+  let score = 0;
+  if(trainedToday) score++;
+  if(waterPct >= 0.6) score++;
+  if(habitsPct >= 0.5) score++;
+  return score >= 2;
 }
 
 // ── HABITS EDITOR ──
@@ -1302,6 +1286,7 @@ function saveWorkout() {
   checkFlower();
   save(state);
   buildWorkoutHistory();
+  updateStreakProgress();
   document.getElementById('totalWorkouts').textContent = state.workouts.length;
 }
 
@@ -2333,7 +2318,6 @@ function showTab(tab) {
   if(tab==='jardim') { setTimeout(buildGarden,50); playSprite('sit'); }
   else if(tab==='treino') { buildWorkoutTypes(); buildWorkoutHistory(); playSprite('walk'); }
   else if(tab==='progresso') { setTimeout(()=>{ showSubtab('geral'); buildMedidaSelector(); updateProgressSummary(); },50); }
-  else if(tab==='jogos') { setTimeout(buildJogosTab, 50); playSprite('walk'); }
   else if(tab==='loja') buildShop();
   else { playSprite('idle'); }
 }
@@ -2348,6 +2332,7 @@ function init() {
   buildWater();
   buildHabits();
   updateTodayXP();
+  updateStreakProgress();
   setTimeout(buildWeightChart,100);
   document.getElementById('totalWorkouts').textContent = state.workouts.length;
   updateProgressSummary();
