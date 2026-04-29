@@ -332,6 +332,7 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:v
     <button class="tab active" onclick="showTab('hoje')">Hoje</button>
     <button class="tab" onclick="showTab('treino')">Treino</button>
     <button class="tab" onclick="showTab('jardim')">Jardim</button>
+    <button class="tab" onclick="showTab('jogos')">🎮 Jogos</button>
     <button class="tab" onclick="showTab('progresso')">Progresso</button>
     <button class="tab" onclick="showTab('loja')">Loja</button>
   </div>
@@ -351,17 +352,6 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:v
           <div class="char-level" id="charLevel">Nível 1 — Iniciante</div>
           <div class="xp-bar-wrap"><div class="xp-bar" id="xpBar" style="width:0%"></div></div>
           <div class="xp-label" id="xpLabel">0 / 100 XP</div>
-          <!-- streak progress -->
-          <div style="margin-top:8px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-              <span style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;">Dia de hoje 🔥</span>
-              <span style="font-size:10px;font-weight:800;color:var(--gold);" id="streakPctLabel">0%</span>
-            </div>
-            <div style="background:rgba(255,255,255,0.08);border-radius:6px;height:5px;overflow:hidden;">
-              <div id="streakBar" style="height:100%;width:0%;border-radius:6px;background:linear-gradient(90deg,#f5c842,#ffaa00);transition:width .5s ease;"></div>
-            </div>
-            <div style="font-size:9px;color:var(--text3);margin-top:3px;" id="streakHint">Treino · Água · Hábitos</div>
-          </div>
         </div>
       </div>
 
@@ -529,6 +519,106 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:v
     </div>
 
     <!-- ── TAB: JOGOS ── -->
+    <div id="tab-jogos" class="screen">
+
+      <!-- sub-tabs -->
+      <div style="display:flex;gap:0;margin-bottom:16px;background:var(--card);border-radius:12px;padding:3px;">
+        <button id="jogo-caminhada-btn" onclick="showJogo('caminhada')" style="flex:1;padding:8px;border:none;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;transition:all .2s;font-family:var(--sans);background:var(--accent);color:#fff;">🚶 Caminhada</button>
+        <button id="jogo-runner-btn" onclick="showJogo('runner')" style="flex:1;padding:8px;border:none;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;transition:all .2s;font-family:var(--sans);background:transparent;color:var(--text3);">🏃 Runner</button>
+      </div>
+
+      <!-- ── JOGO: CAMINHADA ── -->
+      <div id="jogo-caminhada">
+        <div id="caminhada-lobby">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:14px;">
+            <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:6px;">Caminhada Consciente 🌿</div>
+            <div style="font-size:11px;color:var(--text3);line-height:1.7;margin-bottom:16px;">Coloque o celular na mão e caminhe. A Ayelen anda com você pelo jardim em tempo real usando o acelerômetro.</div>
+            <div class="section-title" style="text-align:left;">Meta de duração</div>
+            <div style="display:flex;gap:6px;margin-bottom:16px;" id="caminhadaDurBtns">
+              <button class="dur-btn" onclick="selectCaminhadaDur(this,10)">10 min</button>
+              <button class="dur-btn" onclick="selectCaminhadaDur(this,20)">20 min</button>
+              <button class="dur-btn" onclick="selectCaminhadaDur(this,30)">30 min</button>
+              <button class="dur-btn" onclick="selectCaminhadaDur(this,45)">45 min</button>
+            </div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:12px;" id="caminhadaReward">Selecione a duração para ver a recompensa</div>
+            <button class="save-btn" onclick="startCaminhada()" id="startCaminhadaBtn" style="opacity:.5;">▶ Começar caminhada</button>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;">
+            <div class="section-title">Histórico</div>
+            <div id="caminhadaHistory" style="display:flex;flex-direction:column;gap:6px;"></div>
+          </div>
+        </div>
+
+        <!-- active walk screen -->
+        <div id="caminhada-active" style="display:none;">
+          <canvas id="caminhadaCanvas" style="width:100%;border-radius:var(--radius);display:block;margin-bottom:12px;"></canvas>
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <div class="stat-card"><div class="stat-val" id="caminhadaTimer">00:00</div><div class="stat-label">Tempo</div></div>
+            <div class="stat-card"><div class="stat-val" id="caminhadaPassos">0</div><div class="stat-label">Passos</div></div>
+            <div class="stat-card"><div class="stat-val" id="caminhadaPct">0%</div><div class="stat-label">Meta</div></div>
+          </div>
+          <button onclick="stopCaminhada()" style="width:100%;padding:14px;background:rgba(240,112,112,0.2);border:1px solid rgba(240,112,112,0.4);border-radius:12px;font-size:13px;font-weight:800;color:#f07070;cursor:pointer;font-family:var(--sans);">⏹ Encerrar caminhada</button>
+        </div>
+
+        <!-- victory screen -->
+        <div id="caminhada-victory" style="display:none;text-align:center;padding:20px 0;">
+          <canvas id="caminhadaVictoryCanvas" width="300" height="200" style="width:100%;border-radius:var(--radius);margin-bottom:16px;"></canvas>
+          <div style="font-size:22px;font-weight:900;color:var(--accent2);margin-bottom:6px;" id="victoryTitle">Incrível! 🎉</div>
+          <div style="font-size:13px;color:var(--text3);margin-bottom:16px;" id="victoryMsg"></div>
+          <div style="display:flex;gap:8px;justify-content:center;margin-bottom:20px;">
+            <div style="background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.3);border-radius:12px;padding:10px 18px;font-size:14px;font-weight:900;color:var(--gold);" id="victoryXP">+0 XP</div>
+            <div style="background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.3);border-radius:12px;padding:10px 18px;font-size:14px;font-weight:900;color:var(--gold);" id="victoryCoins">+0 ⭐</div>
+          </div>
+          <button onclick="resetCaminhada()" class="save-btn">↩ Voltar</button>
+        </div>
+      </div>
+
+      <!-- ── JOGO: RUNNER ── -->
+      <div id="jogo-runner" style="display:none;">
+        <div id="runner-lobby">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:14px;">
+            <div style="font-size:32px;margin-bottom:8px;">🏃</div>
+            <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:6px;">Runner Semanal</div>
+            <div style="font-size:11px;color:var(--text3);line-height:1.7;margin-bottom:10px;">O jogo abre em tela cheia horizontal. Incline o celular para a direita → personagem vai à direita. Desvie dos obstáculos e colete itens!</div>
+            <div id="runnerBonus" style="background:rgba(201,111,168,0.1);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:16px;font-size:12px;font-weight:700;color:var(--accent2);"></div>
+            <button class="save-btn" onclick="startRunner()">▶ Jogar agora</button>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;">
+            <div class="section-title">Recordes</div>
+            <div id="runnerHistory" style="display:flex;flex-direction:column;gap:6px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RUNNER FULLSCREEN OVERLAY -->
+      <div id="runner-fullscreen" style="display:none;position:fixed;inset:0;background:#0e0820;z-index:500;overflow:hidden;">
+        <canvas id="runnerCanvas" style="position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;"></canvas>
+        <!-- HUD -->
+        <div style="position:absolute;top:0;left:0;right:0;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(rgba(0,0,0,0.5),transparent);pointer-events:none;">
+          <div style="display:flex;gap:8px;">
+            <div style="background:rgba(0,0,0,0.6);border-radius:10px;padding:5px 12px;font-size:13px;font-weight:900;color:#fff;"><span style="font-size:9px;opacity:.6;">DIST </span><span id="runnerDist">0m</span></div>
+            <div style="background:rgba(0,0,0,0.6);border-radius:10px;padding:5px 12px;font-size:13px;font-weight:900;color:var(--gold);"><span style="font-size:9px;opacity:.6;">PTS </span><span id="runnerScore">0</span></div>
+          </div>
+          <div id="runnerLivesHUD" style="font-size:20px;letter-spacing:2px;">❤️❤️❤️</div>
+          <button onclick="endRunner();resetRunner();" style="background:rgba(240,112,112,0.25);border:1px solid rgba(240,112,112,0.4);border-radius:10px;padding:5px 12px;font-size:11px;font-weight:800;color:#f07070;cursor:pointer;font-family:var(--sans);pointer-events:all;">⏹</button>
+        </div>
+        <!-- gameover -->
+        <div id="runner-gameover" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.88);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px;">
+          <div style="font-size:52px;margin-bottom:10px;">💜</div>
+          <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:6px;" id="gameoverTitle">Fim!</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:20px;" id="gameoverMsg"></div>
+          <div style="display:flex;gap:10px;justify-content:center;margin-bottom:24px;">
+            <div style="background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.3);border-radius:12px;padding:10px 20px;font-size:15px;font-weight:900;color:var(--gold);" id="gameoverXP">+0 XP</div>
+            <div style="background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.3);border-radius:12px;padding:10px 20px;font-size:15px;font-weight:900;color:var(--gold);" id="gameoverCoins">+0 ⭐</div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button onclick="resetRunner()" style="padding:14px 24px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:12px;font-size:13px;font-weight:800;color:#fff;cursor:pointer;font-family:var(--sans);">↩ Sair</button>
+            <button onclick="startRunner()" style="padding:14px 24px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:12px;font-size:13px;font-weight:900;color:#fff;cursor:pointer;font-family:var(--sans);">↺ De novo!</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
 
     <!-- ── TAB: LOJA ── -->
     <div id="tab-loja" class="screen">
@@ -629,7 +719,9 @@ if (!state.flowers) state.flowers = [];
 if (!state.owned) state.owned = [];
 if (!state.weekDays) state.weekDays = {};
 
-// ── DATA LOCAL (corrige bug de timezone UTC) ──
+const TODAY = new Date().toISOString().split('T')[0];
+
+// ── DATA LOCAL (corrige timezone UTC) ──
 function localDateStr(date) {
   const d = date || new Date();
   const y = d.getFullYear();
@@ -637,7 +729,13 @@ function localDateStr(date) {
   const day = String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${day}`;
 }
-const TODAY = localDateStr();
+
+// ── FORMATAR DATA PARA EXIBIÇÃO: d/m/a ──
+function fmtDate(isoStr) {
+  if(!isoStr) return '';
+  const [y,m,d] = isoStr.split('-');
+  return `${d}/${m}/${y.slice(2)}`;
+}
 
 // ── LEVELS ──
 const LEVELS = [
@@ -765,56 +863,37 @@ function updateCharUI() {
 
 // ── DATE STRIP ──
 function buildDateStrip() {
-  // Retroactively recalculate all days we have data for
-  const allDates = new Set([
-    ...Object.keys(state.habits||{}),
-    ...Object.keys(state.water||{}),
-    ...(state.workouts||[]).map(w=>w.date),
-  ]);
-  allDates.forEach(key=>{ state.weekDays[key] = checkDayComplete(key); });
-  state.weekDays[TODAY] = checkDayComplete(TODAY);
-  save(state);
-
   const strip = document.getElementById('dateStrip');
   strip.innerHTML = '';
-  const dayNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const days = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
   const now = new Date();
-
   for(let i=-3;i<=3;i++) {
     const d = new Date(now); d.setDate(now.getDate()+i);
-    const key = localDateStr(d);
-    const isToday = key===TODAY;
-    const isDone = !!state.weekDays[key];
-    const isFuture = i > 0;
+    const key = d.toISOString().split('T')[0];
     const pill = document.createElement('div');
-    pill.className = 'day-pill' + (isToday?' today':'') + (isDone?' done':'');
-    pill.style.opacity = isFuture ? '0.35' : '1';
-    const dotColor = isDone ? 'var(--green)' : isToday ? 'var(--accent)' : 'var(--text3)';
-    pill.innerHTML = `<span class="day-name">${dayNames[d.getDay()]}</span><span class="day-num">${d.getDate()}</span><span class="day-dot" style="background:${dotColor};width:6px;height:6px;border-radius:50%;display:block;"></span>`;
+    pill.className = 'day-pill' + (key===TODAY?' today':'') + (state.weekDays[key]?' done':'');
+    pill.innerHTML = `<span class="day-name">${days[d.getDay()]}</span><span class="day-num">${d.getDate()}</span><span class="day-dot"></span>`;
     strip.appendChild(pill);
   }
-
-  // streak — consecutive days going back
+  // streak & week
   let streak = 0;
-  const cur = new Date();
-  if(state.weekDays[TODAY]) streak++;
-  cur.setDate(cur.getDate()-1);
-  while(streak < 366) {
-    const k = localDateStr(cur);
-    if(!state.weekDays[k]) break;
-    streak++;
-    cur.setDate(cur.getDate()-1);
+  const d = new Date();
+  while(true) {
+    const k = d.toISOString().split('T')[0];
+    if(!state.weekDays[k] && k!==TODAY) break;
+    if(state.weekDays[k]) streak++;
+    d.setDate(d.getDate()-1);
+    if(streak>365) break;
   }
   state.streak = streak;
   document.getElementById('streakVal').textContent = streak;
 
-  // week done count (last 7 days)
-  let weekDone = 0;
-  for(let i=0;i<7;i++){
-    const dd=new Date(); dd.setDate(dd.getDate()-i);
-    if(state.weekDays[localDateStr(dd)]) weekDone++;
-  }
-  document.getElementById('weekDoneVal').textContent = weekDone+'/7';
+  // week done
+  const weekKeys = [];
+  const wn = new Date();
+  for(let i=0;i<7;i++){ const dd=new Date(wn); dd.setDate(wn.getDate()-i); weekKeys.push(dd.toISOString().split('T')[0]); }
+  const done = weekKeys.filter(k=>state.weekDays[k]).length;
+  document.getElementById('weekDoneVal').textContent = done+'/7';
 }
 
 // ── TODAY XP ──
@@ -822,63 +901,11 @@ function updateTodayXP() {
   const h = state.habits[TODAY] || {};
   let tx = 0;
   getHabits().forEach(hc=>{ if(h[hc.id]) tx += hc.xp; });
-  const waterPct = (state.water[TODAY]||0) / getWaterMeta();
-  if(waterPct >= 1) tx += 15;
+  if(state.water[TODAY]) tx += 15;
   document.getElementById('todayXpVal').textContent = tx;
-  updateStreakProgress();
 }
 
-// ── STREAK PROGRESS BAR ──
-function updateStreakProgress() {
-  const done = state.habits[TODAY] || {};
-  const allHabits = getHabits();
-  const habitsDone = allHabits.filter(h=>done[h.id]).length;
-  const habitsPct = allHabits.length > 0 ? habitsDone/allHabits.length : 0;
-  const waterPct = (state.water[TODAY]||0) / getWaterMeta();
-  const trainedToday = (state.workouts||[]).some(w=>w.date===TODAY);
-
-  // each of the 3 pillars worth 33.3%
-  const pillar1 = trainedToday ? 1 : 0;
-  const pillar2 = Math.min(1, waterPct);
-  const pillar3 = Math.min(1, habitsPct);
-  const total = Math.round((pillar1 + pillar2 + pillar3) / 3 * 100);
-
-  const bar = document.getElementById('streakBar');
-  const label = document.getElementById('streakPctLabel');
-  const hint = document.getElementById('streakHint');
-  if(!bar) return;
-
-  bar.style.width = total + '%';
-  label.textContent = total + '%';
-
-  // color changes with progress
-  if(total >= 100) {
-    bar.style.background = 'linear-gradient(90deg,#6dcc7a,#4aaa58)';
-    label.style.color = 'var(--green)';
-    hint.textContent = '✅ Dia completo! Streak garantido!';
-    hint.style.color = 'var(--green)';
-  } else if(total >= 66) {
-    bar.style.background = 'linear-gradient(90deg,#f5c842,#ffaa00)';
-    label.style.color = 'var(--gold)';
-    const missing = [];
-    if(!trainedToday) missing.push('treino');
-    if(waterPct < 0.6) missing.push('água');
-    if(habitsPct < 0.5) missing.push('hábitos');
-    hint.textContent = `Falta: ${missing.join(' · ')}`;
-    hint.style.color = 'var(--text3)';
-  } else {
-    bar.style.background = 'linear-gradient(90deg,#c96fa8,#e891c8)';
-    label.style.color = 'var(--accent2)';
-    // show what's done
-    const done2 = [];
-    if(trainedToday) done2.push('treino ✓');
-    if(waterPct >= 0.6) done2.push('água ✓');
-    if(habitsPct >= 0.5) done2.push('hábitos ✓');
-    hint.textContent = done2.length ? done2.join(' · ') : 'Treino · Água · Hábitos';
-    hint.style.color = 'var(--text3)';
-  }
-}
-
+// ── WATER META ──
 function getWaterMeta() { return state.waterMeta || 8; }
 
 function editWaterMeta() {
@@ -933,7 +960,7 @@ function toggleCup(i, meta) {
     checkFlower();
   }
   save(state);
-  buildWater(); updateTodayXP(); buildDateStrip(); updateStreakProgress();
+  buildWater(); updateTodayXP(); buildDateStrip();
 }
 
 // ── HABITS (with custom) ──
@@ -991,21 +1018,14 @@ function toggleHabit(h, el) {
 }
 
 // ── STREAK / DAY COMPLETE ──
-// Dia completo = 2 de 3 pilares: treino, água 60%+, hábitos 50%+
-function checkDayComplete(dateKey) {
-  const key = dateKey || TODAY;
-  const done = state.habits[key] || {};
-  const allHabits = getHabits();
-  const habitsDone = allHabits.filter(h=>done[h.id]).length;
-  const habitsPct = allHabits.length > 0 ? habitsDone/allHabits.length : 0;
-  const waterPct = (state.water[key]||0) / getWaterMeta();
-  const trainedDay = (state.workouts||[]).some(w=>w.date===key);
-
-  let score = 0;
-  if(trainedDay) score++;
-  if(waterPct >= 0.6) score++;
-  if(habitsPct >= 0.5) score++;
-  return score >= 2;
+// Um dia é completo quando: treino registrado OU 3+ hábitos + água 60%+
+function checkDayComplete() {
+  const done = state.habits[TODAY] || {};
+  const habitsDone = getHabits().filter(h=>done[h.id]).length;
+  const waterPct = (state.water[TODAY]||0) / getWaterMeta();
+  const trainedToday = state.workouts.some(w=>w.date===TODAY);
+  return (trainedToday && habitsDone >= 2 && waterPct >= 0.5) ||
+         (habitsDone >= Math.ceil(getHabits().length * 0.6) && waterPct >= 0.6);
 }
 
 // ── HABITS EDITOR ──
@@ -1071,7 +1091,7 @@ function checkFlower() {
   for(let i=0;i<7;i++) {
     const d = new Date(now);
     d.setDate(now.getDate() - dayOfWeek + i);
-    weekKeys.push(localDateStr(d));
+    weekKeys.push(d.toISOString().split('T')[0]);
   }
   const weekDone = weekKeys.filter(k=>state.weekDays[k]).length;
   const weekId = weekKeys[0];
@@ -1298,7 +1318,6 @@ function saveWorkout() {
   checkFlower();
   save(state);
   buildWorkoutHistory();
-  updateStreakProgress();
   document.getElementById('totalWorkouts').textContent = state.workouts.length;
 }
 
@@ -1309,7 +1328,7 @@ function buildWorkoutHistory() {
   recent.forEach(w=>{
     const row=document.createElement('div');
     row.style.cssText='background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;';
-    row.innerHTML=`<span style="font-size:20px">${w.icon}</span><div style="flex:1"><div style="font-size:13px;font-weight:700">${w.name}</div><div style="font-size:11px;color:var(--text3)">${w.dur} min · ${w.date}</div></div><span style="font-size:11px;font-weight:800;color:var(--gold)">+${w.xp} XP</span>`;
+    row.innerHTML=`<span style="font-size:20px">${w.icon}</span><div style="flex:1"><div style="font-size:13px;font-weight:700">${w.name}</div><div style="font-size:11px;color:var(--text3)">${w.dur} min · ${fmtDate(w.date)}</div></div><span style="font-size:11px;font-weight:800;color:var(--gold)">+${w.xp} XP</span>`;
     el.appendChild(row);
   });
 }
@@ -1364,21 +1383,39 @@ function buildObjetivosList() {
     let progressBar = '';
     let statusMsg = '';
     if(obj && current !== null) {
-      const first = data[0].val;
-      const totalDist = Math.abs(obj - first);
-      const traveled = Math.abs(current - first);
-      const pct = totalDist > 0 ? Math.min(100, Math.round(traveled/totalDist*100)) : 100;
-      const closer = (obj < first) ? (current < first) : (current > first);
-      const onTrack = obj < first ? current <= first : current >= first;
-      const approaching = obj < first ? current < first && current > obj : current > first && current < obj;
+      // garante que data está ordenado do mais antigo para o mais recente
+      const sorted = [...data].sort((a,b)=>a.date.localeCompare(b.date));
+      const first = sorted[0].val;
+      const needsDecrease = obj < first;
+      const totalDist = Math.abs(obj - first); // ex: |80 - 113| = 33kg
+      const traveled = Math.abs(current - first); // ex: |111.9 - 113| = 1.1kg
+      const pct = totalDist > 0 ? Math.min(100, Math.round(traveled / totalDist * 100)) : 0;
       const diff = Math.abs(current - obj).toFixed(1);
-      const done = Math.abs(current - obj) < 0.5;
-      let statusColor = approaching ? 'var(--green)' : 'var(--red)';
-      let statusText = done ? '🎉 Objetivo alcançado!' : approaching ? `✅ Faltam ${diff} ${m.unit}` : `⚠️ Afastando ${diff} ${m.unit}`;
-      statusMsg = `<div style="font-size:11px;font-weight:700;color:${done?'var(--gold)':statusColor};margin-top:8px;">${statusText}</div>`;
-      progressBar = `<div style="margin-top:8px;background:rgba(255,255,255,0.08);border-radius:6px;height:6px;overflow:hidden;">
-        <div style="height:100%;width:${pct}%;background:${done?'var(--gold)':approaching?'var(--green)':'var(--red)'};border-radius:6px;transition:width .5s;"></div>
-      </div><div style="font-size:10px;color:var(--text3);margin-top:4px;">${pct}% do caminho</div>`;
+      const tolerance = m.unit === 'kg' ? 0.5 : 0.5;
+      const done = Math.abs(current - obj) < tolerance;
+      const approaching = needsDecrease ? current < first : current > first;
+      const onTrack = needsDecrease ? current <= first : current >= first;
+      const barColor = done ? 'var(--gold)' : (approaching && onTrack) ? 'var(--green)' : 'var(--red)';
+      let statusText, statusColor;
+      if(done) { statusText = '🎉 Objetivo alcançado!'; statusColor = 'var(--gold)'; }
+      else if(approaching && onTrack) { statusText = `✅ Faltam ${diff} ${m.unit} para a meta`; statusColor = 'var(--green)'; }
+      else { statusText = `⚠️ Afastando — distância: ${diff} ${m.unit}`; statusColor = 'var(--red)'; }
+      const dirLabel = needsDecrease ? 'perder' : 'ganhar';
+      const alreadyMoved = needsDecrease ? (current < first ? 'perdeu' : 'ganhou') : (current > first ? 'ganhou' : 'perdeu');
+      statusMsg = `<div style="font-size:11px;font-weight:700;color:${statusColor};margin-top:8px;">${statusText}</div>`;
+      progressBar = `<div style="margin-top:8px;">
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-bottom:4px;">
+          <span>Início: <b>${first}</b> ${m.unit}</span>
+          <span style="font-weight:900;color:${barColor};font-size:11px;">${pct}%</span>
+          <span>Meta: <b>${obj}</b> ${m.unit}</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.08);border-radius:6px;height:8px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:${barColor};border-radius:6px;transition:width .6s;"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;">
+          Precisa ${dirLabel} ${totalDist.toFixed(1)} ${m.unit} no total · já ${alreadyMoved} ${traveled.toFixed(1)} ${m.unit}
+        </div>
+      </div>`;
     }
 
     card.innerHTML = `
@@ -1466,26 +1503,34 @@ function buildGeralView() {
   }
   withData.forEach(m=>{
     const data = getMedidaData(m.id);
-    const curr = data[data.length-1].val;
-    const first = data[0].val;
+    const sorted = [...data].sort((a,b)=>a.date.localeCompare(b.date));
+    const curr = sorted[sorted.length-1].val;
+    const first = sorted[0].val;
     const goal = objs[m.id];
-    const diff = data.length>=2 ? (curr - data[data.length-2].val) : null;
-    const totalDiff = curr - first;
+    const diff = sorted.length>=2 ? (curr - sorted[sorted.length-2].val) : null;
 
     let goalSection = '';
     if(goal) {
-      const distToGoal = (curr - goal).toFixed(1);
+      const distToGoal = Math.abs(curr - goal).toFixed(1);
       const done = Math.abs(curr-goal)<0.5;
-      const approachingGoal = goal<first ? curr<first : curr>first;
-      const color = done?'var(--gold)':approachingGoal?'var(--green)':'var(--red)';
-      const pct = first!==goal ? Math.min(100,Math.round(Math.abs(curr-first)/Math.abs(goal-first)*100)) : 100;
+      const needsDown = goal < first;
+      const approachingGoal = needsDown ? curr < first : curr > first;
+      const onTrack = needsDown ? curr <= first : curr >= first;
+      const color = done?'var(--gold)':(approachingGoal&&onTrack)?'var(--green)':'var(--red)';
+      const totalDist = Math.abs(goal-first);
+      const traveled = Math.abs(curr-first);
+      const pct = totalDist > 0 ? Math.min(100,Math.round(traveled/totalDist*100)) : 0;
+      const statusLabel = done?'✓ Meta!':approachingGoal&&onTrack?`faltam ${distToGoal}`:`⚠️ ${distToGoal}`;
       goalSection = `<div style="margin-top:8px;">
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:3px;">
-          <span>Início: ${first}</span><span style="color:${color};font-weight:700;">${done?'✓ Meta!':approachingGoal?'▼ '+Math.abs(distToGoal):'▲ +'+Math.abs(distToGoal)} ${m.unit}</span><span>Meta: ${goal}</span>
+          <span>${first} ${m.unit}</span>
+          <span style="color:${color};font-weight:800;">${statusLabel} ${m.unit}</span>
+          <span>🎯 ${goal} ${m.unit}</span>
         </div>
-        <div style="background:rgba(255,255,255,0.08);border-radius:6px;height:5px;overflow:hidden;">
-          <div style="height:100%;width:${pct}%;background:${color};border-radius:6px;"></div>
+        <div style="background:rgba(255,255,255,0.08);border-radius:6px;height:6px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:${color};border-radius:6px;transition:width .5s;"></div>
         </div>
+        <div style="font-size:9px;color:var(--text3);margin-top:2px;text-align:right;">${pct}% do caminho</div>
       </div>`;
     }
 
@@ -1499,7 +1544,7 @@ function buildGeralView() {
       <span style="font-size:20px;">${m.icon}</span>
       <div style="flex:1;">
         <div style="font-size:12px;font-weight:800;color:var(--text2);">${m.label}</div>
-        <div style="font-size:10px;color:var(--text3);">${data.length} registros · desde ${data[0].date.slice(5)}</div>
+        <div style="font-size:10px;color:var(--text3);">${sorted.length} registros · desde ${fmtDate(sorted[0].date)}</div>
       </div>
       <div style="text-align:right;">
         <div style="font-size:18px;font-weight:900;color:${m.color};">${curr} <span style="font-size:11px;">${m.unit}</span></div>
@@ -1645,7 +1690,7 @@ function drawLineChart(canvasId, data, color) {
   // date labels
   ctx.fillStyle='rgba(255,255,255,0.2)'; ctx.font='8px Nunito,sans-serif';
   const step = Math.ceil(data.length/5);
-  data.forEach((d,i)=>{ if(i%step===0||i===data.length-1){ const x=pad.l+i*(cW/(data.length-1)); ctx.fillText(d.date.slice(5),x-8,canvas.height-4); }});
+  data.forEach((d,i)=>{ if(i%step===0||i===data.length-1){ const x=pad.l+i*(cW/(data.length-1)); ctx.fillText(fmtDate(d.date),x-10,canvas.height-4); }});
 
   // fill
   const grad=ctx.createLinearGradient(0,pad.t,0,pad.t+cH);
@@ -1790,10 +1835,10 @@ function buildMedidaHistory() {
     const row=document.createElement('div');
     row.style.cssText='background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;';
     row.innerHTML=`<span style="font-size:18px;">${r.medida.icon}</span>
-      <div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--text);">${r.medida.label}</div><div style="font-size:10px;color:var(--text3);">${r.date}</div></div>
+      <div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--text);">${r.medida.label}</div><div style="font-size:10px;color:var(--text3);">${fmtDate(r.date)}</div></div>
       <span style="font-size:14px;font-weight:900;color:${r.medida.color};">${r.val} ${r.medida.unit}</span>
       <span style="font-size:16px;color:var(--text3);opacity:.4;">›</span>`;
-    row.onclick=()=>showDeleteModal(r.medida.id, r.id, r.val, r.medida.unit, r.date);
+    row.onclick=()=>showDeleteModal(r.medida.id, r.id, r.val, r.medida.unit, fmtDate(r.date));
     el.appendChild(row);
   });
   if(!all.length) el.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center;padding:20px 0;">Nenhum registro ainda 🌱</div>';
@@ -2049,7 +2094,7 @@ function buildCaminhadaHistory(){
   hist.forEach(h=>{
     const r=document.createElement('div');
     r.style.cssText='display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);';
-    r.innerHTML=`<span style="font-size:18px;">🚶</span><div style="flex:1;"><div style="font-size:12px;font-weight:700;">${h.passos} passos · ${h.pct}%</div><div style="font-size:10px;color:var(--text3);">${h.date} · ${Math.floor(h.elapsed/60)}min</div></div><span style="font-size:12px;font-weight:800;color:var(--gold);">+${Math.round(h.dur*2*(h.pct/100))} XP</span>`;
+    r.innerHTML=`<span style="font-size:18px;">🚶</span><div style="flex:1;"><div style="font-size:12px;font-weight:700;">${h.passos} passos · ${h.pct}%</div><div style="font-size:10px;color:var(--text3);">${fmtDate(h.date)} · ${Math.floor(h.elapsed/60)}min</div></div><span style="font-size:12px;font-weight:800;color:var(--gold);">+${Math.round(h.dur*2*(h.pct/100))} XP</span>`;
     el.appendChild(r);
   });
 }
@@ -2071,7 +2116,7 @@ function getWeekScore(){
   const now=new Date(), dow=now.getDay(); let done=0;
   for(let i=0;i<7;i++){
     const d=new Date(now); d.setDate(now.getDate()-dow+i);
-    if(state.weekDays&&state.weekDays[localDateStr(d)]) done++;
+    if(state.weekDays&&state.weekDays[d.toISOString().split('T')[0]]) done++;
   }
   return done;
 }
@@ -2301,7 +2346,7 @@ function buildRunnerHistory(){
   hist.forEach(h=>{
     const r=document.createElement('div');
     r.style.cssText='display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);';
-    r.innerHTML=`<span style="font-size:18px;">🏃</span><div style="flex:1;"><div style="font-size:12px;font-weight:700;">${h.dist}m · ${h.score} pts</div><div style="font-size:10px;color:var(--text3);">${h.date}</div></div><span style="font-size:12px;font-weight:800;color:var(--gold);">+${h.xp} XP</span>`;
+    r.innerHTML=`<span style="font-size:18px;">🏃</span><div style="flex:1;"><div style="font-size:12px;font-weight:700;">${h.dist}m · ${h.score} pts</div><div style="font-size:10px;color:var(--text3);">${fmtDate(h.date)}</div></div><span style="font-size:12px;font-weight:800;color:var(--gold);">+${h.xp} XP</span>`;
     el.appendChild(r);
   });
 }
@@ -2330,6 +2375,7 @@ function showTab(tab) {
   if(tab==='jardim') { setTimeout(buildGarden,50); playSprite('sit'); }
   else if(tab==='treino') { buildWorkoutTypes(); buildWorkoutHistory(); playSprite('walk'); }
   else if(tab==='progresso') { setTimeout(()=>{ showSubtab('geral'); buildMedidaSelector(); updateProgressSummary(); },50); }
+  else if(tab==='jogos') { setTimeout(buildJogosTab, 50); playSprite('walk'); }
   else if(tab==='loja') buildShop();
   else { playSprite('idle'); }
 }
@@ -2344,7 +2390,6 @@ function init() {
   buildWater();
   buildHabits();
   updateTodayXP();
-  updateStreakProgress();
   setTimeout(buildWeightChart,100);
   document.getElementById('totalWorkouts').textContent = state.workouts.length;
   updateProgressSummary();
