@@ -532,9 +532,12 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:v
 
     <!-- ── TAB: LOJA ── -->
     <div id="tab-loja" class="screen">
-      <div class="section-title">Loja de itens ✨</div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:14px;">
-        Gaste suas estrelas em itens pro jardim e mais! Você ganha ⭐ completando hábitos.
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;margin-top:4px;">
+        <span class="section-title" style="margin:0;">Loja do Jardim ✨</span>
+        <span id="shopOwnedBadge" style="font-size:10px;color:var(--text3);font-weight:700;"></span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:14px;line-height:1.7;">
+        Compre itens com ⭐ e eles aparecem no jardim. Quanto mais XP você ganha, mais os itens evoluem! 🌱→🌸→✨
       </div>
       <div class="shop-grid" id="shopGrid"></div>
     </div>
@@ -639,6 +642,13 @@ function localDateStr(date) {
 }
 const TODAY = localDateStr();
 
+// ── FORMATAR DATA: d/m/aa ──
+function fmtDate(iso) {
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return `${parseInt(d)}/${parseInt(m)}/${y.slice(2)}`;
+}
+
 // ── LEVELS ──
 const LEVELS = [
   {name:'Iniciante',xp:0},
@@ -671,14 +681,66 @@ const WORKOUT_CONFIG = [
   {id:'pilates', icon:'🤸', name:'Pilates', xpPerMin:0.9},
 ];
 
+// Each item: id, icon, name, price, desc, gardenX/Y (relative 0-1), levels (visual evolution by XP)
 const SHOP_ITEMS = [
-  {id:'vaso1', icon:'🪴', name:'Vaso azul', price:50},
-  {id:'banco', icon:'🛖', name:'Banquinho', price:80},
-  {id:'borboleta', icon:'🦋', name:'Borboletas', price:120},
-  {id:'fonte', icon:'⛲', name:'Fontezinha', price:200},
-  {id:'lampiao', icon:'🏮', name:'Lampião', price:150},
-  {id:'arcoiris', icon:'🌈', name:'Arco-íris', price:300},
+  {
+    id:'banco', icon:'🪑', name:'Banquinho', price:60,
+    desc:'Um lugar para a Ayelen descansar no jardim',
+    gx:0.18, gy:0.78,
+    levels:['🪑','🪑✨','🛋️✨','🛋️🌺']
+  },
+  {
+    id:'fonte', icon:'⛲', name:'Fonte', price:120,
+    desc:'Uma fontezinha que traz calma ao jardim',
+    gx:0.72, gy:0.72,
+    levels:['⛲','⛲💧','⛲🌊','⛲🌊✨']
+  },
+  {
+    id:'lampiao', icon:'🏮', name:'Lampião', price:90,
+    desc:'Ilumina o jardim à noite',
+    gx:0.85, gy:0.80,
+    levels:['🏮','🏮✨','🏮🌟','🕯️🌟']
+  },
+  {
+    id:'borboleta', icon:'🦋', name:'Borboletas', price:150,
+    desc:'Borboletas coloridas que voam pelo jardim',
+    gx:0.5, gy:0.45,
+    levels:['🦋','🦋🦋','🦋🦋🌸','🦋🦋🌸✨']
+  },
+  {
+    id:'arcoiris', icon:'🌈', name:'Arco-íris', price:200,
+    desc:'Aparece no céu do jardim após cada conquista',
+    gx:0.5, gy:0.15,
+    levels:['🌈','🌈✨','🌈🌟','🌈🌟💫']
+  },
+  {
+    id:'gatinho', icon:'🐱', name:'Gatinho', price:180,
+    desc:'Um gatinho que dorme no jardim',
+    gx:0.28, gy:0.82,
+    levels:['🐱','🐱💤','🐱🌸','😺🌸✨']
+  },
+  {
+    id:'cogumelo', icon:'🍄', name:'Cogumelos mágicos', price:80,
+    desc:'Cogumelos encantados que crescem entre as flores',
+    gx:0.62, gy:0.80,
+    levels:['🍄','🍄🍄','🍄🍄✨','🍄🍄🌟']
+  },
+  {
+    id:'estrelas', icon:'⭐', name:'Estrelas cadentes', price:250,
+    desc:'Estrelas que caem pelo céu do jardim à noite',
+    gx:0.35, gy:0.08,
+    levels:['⭐','⭐🌙','✨⭐🌙','💫✨⭐🌙']
+  },
 ];
+
+function getItemLevel(itemId) {
+  // nível do item baseado no XP total do usuário
+  const xp = state.xp || 0;
+  if(xp >= 1500) return 3;
+  if(xp >= 600) return 2;
+  if(xp >= 200) return 1;
+  return 0;
+}
 
 let selectedWorkout = null;
 let selectedDur = null;
@@ -1240,6 +1302,26 @@ function drawGarden() {
     ctx.font='14px sans-serif';
     ctx.fillText('?',fx-5,fy+5);
   }
+
+  // ── SHOP ITEMS no jardim ──
+  const owned = state.owned || [];
+  const lvl = getItemLevel();
+  owned.forEach(id=>{
+    const item = SHOP_ITEMS.find(s=>s.id===id);
+    if(!item) return;
+    const ix = item.gx * W;
+    const iy = item.gy * H;
+    const icon = item.levels[Math.min(lvl, item.levels.length-1)];
+
+    // glow ring that evolves with level
+    if(lvl >= 1) {
+      ctx.shadowColor = lvl>=3?'#f5c842':lvl>=2?'#c96fa8':'rgba(255,255,255,0.3)';
+      ctx.shadowBlur = 8 + lvl*4;
+    }
+    ctx.font = `${18 + lvl*3}px sans-serif`;
+    ctx.fillText(icon, ix - 10, iy);
+    ctx.shadowBlur = 0;
+  });
 }
 
 function buildGarden() {
@@ -1309,7 +1391,7 @@ function buildWorkoutHistory() {
   recent.forEach(w=>{
     const row=document.createElement('div');
     row.style.cssText='background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;';
-    row.innerHTML=`<span style="font-size:20px">${w.icon}</span><div style="flex:1"><div style="font-size:13px;font-weight:700">${w.name}</div><div style="font-size:11px;color:var(--text3)">${w.dur} min · ${w.date}</div></div><span style="font-size:11px;font-weight:800;color:var(--gold)">+${w.xp} XP</span>`;
+    row.innerHTML=`<span style="font-size:20px">${w.icon}</span><div style="flex:1"><div style="font-size:13px;font-weight:700">${w.name}</div><div style="font-size:11px;color:var(--text3)">${w.dur} min · ${fmtDate(w.date)}</div></div><span style="font-size:11px;font-weight:800;color:var(--gold)">+${w.xp} XP</span>`;
     el.appendChild(row);
   });
 }
@@ -1364,21 +1446,38 @@ function buildObjetivosList() {
     let progressBar = '';
     let statusMsg = '';
     if(obj && current !== null) {
-      const first = data[0].val;
-      const totalDist = Math.abs(obj - first);
-      const traveled = Math.abs(current - first);
-      const pct = totalDist > 0 ? Math.min(100, Math.round(traveled/totalDist*100)) : 100;
-      const closer = (obj < first) ? (current < first) : (current > first);
-      const onTrack = obj < first ? current <= first : current >= first;
-      const approaching = obj < first ? current < first && current > obj : current > first && current < obj;
+      // ordena por data para garantir que first é o registro mais antigo
+      const sorted = [...data].sort((a,b)=>a.date.localeCompare(b.date));
+      const first = sorted[0].val;
+      const needsDecrease = obj < first;           // ex: peso 113→80 = true
+      const totalDist = Math.abs(obj - first);     // ex: |80-113| = 33kg
+      const traveled = Math.abs(current - first);  // ex: |111.9-113| = 1.1kg
+      // pct = quanto do caminho total já foi percorrido (0% a 100%)
+      const pct = totalDist > 0 ? Math.min(100, Math.round(traveled / totalDist * 100)) : 0;
       const diff = Math.abs(current - obj).toFixed(1);
       const done = Math.abs(current - obj) < 0.5;
-      let statusColor = approaching ? 'var(--green)' : 'var(--red)';
-      let statusText = done ? '🎉 Objetivo alcançado!' : approaching ? `✅ Faltam ${diff} ${m.unit}` : `⚠️ Afastando ${diff} ${m.unit}`;
-      statusMsg = `<div style="font-size:11px;font-weight:700;color:${done?'var(--gold)':statusColor};margin-top:8px;">${statusText}</div>`;
-      progressBar = `<div style="margin-top:8px;background:rgba(255,255,255,0.08);border-radius:6px;height:6px;overflow:hidden;">
-        <div style="height:100%;width:${pct}%;background:${done?'var(--gold)':approaching?'var(--green)':'var(--red)'};border-radius:6px;transition:width .5s;"></div>
-      </div><div style="font-size:10px;color:var(--text3);margin-top:4px;">${pct}% do caminho</div>`;
+      // indo na direção certa?
+      const approaching = needsDecrease ? current < first : current > first;
+      const onTrack = needsDecrease ? current <= first : current >= first;
+      const barColor = done ? 'var(--gold)' : (approaching && onTrack) ? 'var(--green)' : 'var(--red)';
+      let statusColor, statusText;
+      if(done) { statusText = '🎉 Objetivo alcançado!'; statusColor = 'var(--gold)'; }
+      else if(approaching && onTrack) { statusText = `✅ Faltam ${diff} ${m.unit} para a meta`; statusColor = 'var(--green)'; }
+      else { statusText = `⚠️ Afastando — distância: ${diff} ${m.unit}`; statusColor = 'var(--red)'; }
+      statusMsg = `<div style="font-size:11px;font-weight:700;color:${statusColor};margin-top:8px;">${statusText}</div>`;
+      progressBar = `<div style="margin-top:10px;">
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-bottom:4px;">
+          <span>Início: <b>${first}</b> ${m.unit}</span>
+          <span style="font-size:11px;font-weight:900;color:${barColor};">${pct}%</span>
+          <span>Meta: <b>${obj}</b> ${m.unit}</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.08);border-radius:6px;height:8px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:${barColor};border-radius:6px;transition:width .6s;"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;">
+          Falta ${needsDecrease?'perder':'ganhar'} ${totalDist.toFixed(1)} ${m.unit} no total · já ${needsDecrease?(current<first?'perdeu':'ganhou'):(current>first?'ganhou':'perdeu')} ${traveled.toFixed(1)} ${m.unit}
+        </div>
+      </div>`;
     }
 
     card.innerHTML = `
@@ -1466,26 +1565,34 @@ function buildGeralView() {
   }
   withData.forEach(m=>{
     const data = getMedidaData(m.id);
-    const curr = data[data.length-1].val;
-    const first = data[0].val;
+    const sorted = [...data].sort((a,b)=>a.date.localeCompare(b.date));
+    const curr = sorted[sorted.length-1].val;
+    const first = sorted[0].val;
     const goal = objs[m.id];
-    const diff = data.length>=2 ? (curr - data[data.length-2].val) : null;
-    const totalDiff = curr - first;
+    const diff = sorted.length>=2 ? (curr - sorted[sorted.length-2].val) : null;
 
     let goalSection = '';
     if(goal) {
-      const distToGoal = (curr - goal).toFixed(1);
+      const needsDecrease = goal < first;
+      const totalDist = Math.abs(goal - first);
+      const traveled = Math.abs(curr - first);
+      const pct = totalDist > 0 ? Math.min(100, Math.round(traveled/totalDist*100)) : 0;
+      const diff2 = Math.abs(curr - goal).toFixed(1);
       const done = Math.abs(curr-goal)<0.5;
-      const approachingGoal = goal<first ? curr<first : curr>first;
-      const color = done?'var(--gold)':approachingGoal?'var(--green)':'var(--red)';
-      const pct = first!==goal ? Math.min(100,Math.round(Math.abs(curr-first)/Math.abs(goal-first)*100)) : 100;
+      const approaching = needsDecrease ? curr < first : curr > first;
+      const onTrack = needsDecrease ? curr <= first : curr >= first;
+      const color = done?'var(--gold)':(approaching&&onTrack)?'var(--green)':'var(--red)';
+      const statusLabel = done ? '✓ Meta!' : (approaching&&onTrack) ? `faltam ${diff2} ${m.unit}` : `⚠️ ${diff2} ${m.unit}`;
       goalSection = `<div style="margin-top:8px;">
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:3px;">
-          <span>Início: ${first}</span><span style="color:${color};font-weight:700;">${done?'✓ Meta!':approachingGoal?'▼ '+Math.abs(distToGoal):'▲ +'+Math.abs(distToGoal)} ${m.unit}</span><span>Meta: ${goal}</span>
+          <span>${first} ${m.unit}</span>
+          <span style="color:${color};font-weight:800;">${statusLabel}</span>
+          <span>🎯 ${goal} ${m.unit}</span>
         </div>
-        <div style="background:rgba(255,255,255,0.08);border-radius:6px;height:5px;overflow:hidden;">
-          <div style="height:100%;width:${pct}%;background:${color};border-radius:6px;"></div>
+        <div style="background:rgba(255,255,255,0.08);border-radius:6px;height:6px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:${color};border-radius:6px;transition:width .5s;"></div>
         </div>
+        <div style="font-size:9px;color:var(--text3);margin-top:2px;text-align:right;">${pct}% do caminho</div>
       </div>`;
     }
 
@@ -1499,7 +1606,7 @@ function buildGeralView() {
       <span style="font-size:20px;">${m.icon}</span>
       <div style="flex:1;">
         <div style="font-size:12px;font-weight:800;color:var(--text2);">${m.label}</div>
-        <div style="font-size:10px;color:var(--text3);">${data.length} registros · desde ${data[0].date.slice(5)}</div>
+        <div style="font-size:10px;color:var(--text3);">${sorted.length} registros · desde ${fmtDate(sorted[0].date)}</div>
       </div>
       <div style="text-align:right;">
         <div style="font-size:18px;font-weight:900;color:${m.color};">${curr} <span style="font-size:11px;">${m.unit}</span></div>
@@ -1645,7 +1752,7 @@ function drawLineChart(canvasId, data, color) {
   // date labels
   ctx.fillStyle='rgba(255,255,255,0.2)'; ctx.font='8px Nunito,sans-serif';
   const step = Math.ceil(data.length/5);
-  data.forEach((d,i)=>{ if(i%step===0||i===data.length-1){ const x=pad.l+i*(cW/(data.length-1)); ctx.fillText(d.date.slice(5),x-8,canvas.height-4); }});
+  data.forEach((d,i)=>{ if(i%step===0||i===data.length-1){ const x=pad.l+i*(cW/(data.length-1)); ctx.fillText(fmtDate(d.date),x-12,canvas.height-4); }});
 
   // fill
   const grad=ctx.createLinearGradient(0,pad.t,0,pad.t+cH);
@@ -1790,10 +1897,10 @@ function buildMedidaHistory() {
     const row=document.createElement('div');
     row.style.cssText='background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;';
     row.innerHTML=`<span style="font-size:18px;">${r.medida.icon}</span>
-      <div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--text);">${r.medida.label}</div><div style="font-size:10px;color:var(--text3);">${r.date}</div></div>
+      <div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--text);">${r.medida.label}</div><div style="font-size:10px;color:var(--text3);">${fmtDate(r.date)}</div></div>
       <span style="font-size:14px;font-weight:900;color:${r.medida.color};">${r.val} ${r.medida.unit}</span>
       <span style="font-size:16px;color:var(--text3);opacity:.4;">›</span>`;
-    row.onclick=()=>showDeleteModal(r.medida.id, r.id, r.val, r.medida.unit, r.date);
+    row.onclick=()=>showDeleteModal(r.medida.id, r.id, r.val, r.medida.unit, fmtDate(r.date));
     el.appendChild(row);
   });
   if(!all.length) el.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center;padding:20px 0;">Nenhum registro ainda 🌱</div>';
@@ -1813,24 +1920,47 @@ function buildWeightChart() { buildMedidaChart(); }
 function buildShop() {
   const grid = document.getElementById('shopGrid');
   grid.innerHTML='';
+  const lvl = getItemLevel();
   SHOP_ITEMS.forEach(item=>{
-    const el=document.createElement('div');
-    const owned=state.owned.includes(item.id);
-    el.className='shop-item'+(owned?' owned':'');
-    el.innerHTML=`<div class="shop-item-icon">${item.icon}</div><div class="shop-item-name">${item.name}</div><div class="shop-item-price">${owned?'<span style="color:var(--green)">Comprado</span>':'⭐ '+item.price}</div>`;
-    if(!owned) el.onclick=()=>buyItem(item);
+    const owned = (state.owned||[]).includes(item.id);
+    const currentIcon = item.levels[Math.min(lvl, item.levels.length-1)];
+    const el = document.createElement('div');
+    el.style.cssText=`background:var(--card);border:1px solid ${owned?'rgba(109,204,122,0.4)':'var(--border)'};border-radius:14px;padding:14px;text-align:center;cursor:${owned?'default':'pointer'};transition:all .2s;position:relative;`;
+    if(owned) {
+      const lvlPct = Math.round((lvl/3)*100);
+      el.innerHTML=`
+        <div style="position:absolute;top:8px;right:10px;font-size:11px;color:var(--green);font-weight:900;">✓</div>
+        <div style="font-size:34px;margin-bottom:6px;">${currentIcon}</div>
+        <div style="font-size:11px;font-weight:800;color:var(--text);margin-bottom:3px;">${item.name}</div>
+        <div style="font-size:9px;color:var(--green);font-weight:700;margin-bottom:5px;">No jardim · Nível ${lvl+1}/4</div>
+        <div style="background:rgba(255,255,255,0.08);border-radius:4px;height:4px;overflow:hidden;">
+          <div style="height:100%;width:${lvlPct}%;background:var(--gold);border-radius:4px;"></div>
+        </div>`;
+    } else {
+      el.innerHTML=`
+        <div style="font-size:34px;margin-bottom:6px;">${item.icon}</div>
+        <div style="font-size:11px;font-weight:800;color:var(--text);margin-bottom:4px;">${item.name}</div>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.4;">${item.desc}</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:900;color:var(--gold);">⭐ ${item.price}</div>`;
+      el.onclick=()=>buyItem(item);
+    }
     grid.appendChild(el);
   });
 }
 
 function buyItem(item) {
-  if(state.coins < item.price) { toast(`Precisa de ⭐ ${item.price} — você tem ${state.coins}`); return; }
+  if((state.coins||0) < item.price) {
+    toast(`Precisa de ⭐ ${item.price} — você tem ${state.coins||0}`); return;
+  }
   state.coins -= item.price;
+  if(!state.owned) state.owned=[];
   state.owned.push(item.id);
   save(state);
-  toast(`${item.icon} ${item.name} comprado!`);
+  toast(`${item.icon} ${item.name} adicionado ao jardim! 🌸`);
+  playSprite('celebrate', false);
   updateCharUI();
   buildShop();
+  if(document.getElementById('tab-jardim').classList.contains('active')) buildGarden();
 }
 
 // ── PRÉ-CARREGAMENTO DE SPRITES ──
@@ -2049,7 +2179,7 @@ function buildCaminhadaHistory(){
   hist.forEach(h=>{
     const r=document.createElement('div');
     r.style.cssText='display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);';
-    r.innerHTML=`<span style="font-size:18px;">🚶</span><div style="flex:1;"><div style="font-size:12px;font-weight:700;">${h.passos} passos · ${h.pct}%</div><div style="font-size:10px;color:var(--text3);">${h.date} · ${Math.floor(h.elapsed/60)}min</div></div><span style="font-size:12px;font-weight:800;color:var(--gold);">+${Math.round(h.dur*2*(h.pct/100))} XP</span>`;
+    r.innerHTML=`<span style="font-size:18px;">🚶</span><div style="flex:1;"><div style="font-size:12px;font-weight:700;">${h.passos} passos · ${h.pct}%</div><div style="font-size:10px;color:var(--text3);">${fmtDate(h.date)} · ${Math.floor(h.elapsed/60)}min</div></div><span style="font-size:12px;font-weight:800;color:var(--gold);">+${Math.round(h.dur*2*(h.pct/100))} XP</span>`;
     el.appendChild(r);
   });
 }
@@ -2301,7 +2431,7 @@ function buildRunnerHistory(){
   hist.forEach(h=>{
     const r=document.createElement('div');
     r.style.cssText='display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);';
-    r.innerHTML=`<span style="font-size:18px;">🏃</span><div style="flex:1;"><div style="font-size:12px;font-weight:700;">${h.dist}m · ${h.score} pts</div><div style="font-size:10px;color:var(--text3);">${h.date}</div></div><span style="font-size:12px;font-weight:800;color:var(--gold);">+${h.xp} XP</span>`;
+    r.innerHTML=`<span style="font-size:18px;">🏃</span><div style="flex:1;"><div style="font-size:12px;font-weight:700;">${h.dist}m · ${h.score} pts</div><div style="font-size:10px;color:var(--text3);">${fmtDate(h.date)}</div></div><span style="font-size:12px;font-weight:800;color:var(--gold);">+${h.xp} XP</span>`;
     el.appendChild(r);
   });
 }
